@@ -27,25 +27,25 @@ export const PlaygroundHeader = ({
   const { config } = useConfig();
   return (
     <div
-      className={`flex gap-4 pt-4 text-${accentColor}-500 justify-between items-center shrink-0`}
+      className={`flex gap-6 px-6 py-4 backdrop-blur-2xl bg-white/5 border border-white/10 rounded-full shadow-2xl justify-between items-center shrink-0 w-max mx-auto mt-6 transition-all duration-500`}
       style={{
         height: height + "px",
       }}
     >
-      <div className="flex items-center gap-3 basis-2/3">
-        <div className="flex lg:basis-1/2">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center bg-black/40 p-2 rounded-full shadow-inner ring-1 ring-white/10">
           <a href="https://livekit.io">{logo ?? <LKLogo />}</a>
         </div>
-        <div className="lg:basis-1/2 lg:text-center text-xs lg:text-base lg:font-semibold text-white">
+        <div className="text-sm font-medium text-white tracking-wide">
           {title}
         </div>
       </div>
-      <div className="flex basis-1/3 justify-end items-center gap-2">
+      <div className="flex justify-end items-center gap-3">
         {githubLink && (
           <a
             href={githubLink}
             target="_blank"
-            className={`text-white hover:text-white/80`}
+            className={`text-white/70 hover:text-white transition-colors`}
           >
             <GithubSVG />
           </a>
@@ -55,6 +55,7 @@ export const PlaygroundHeader = ({
           accentColor={
             connectionState === ConnectionState.Connected ? "red" : accentColor
           }
+          className="rounded-full px-5 font-semibold text-sm h-10 shadow-lg shadow-black/20"
           disabled={connectionState === ConnectionState.Connecting}
           onClick={() => {
             onConnectClicked();

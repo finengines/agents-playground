@@ -848,7 +848,8 @@ export default function Playground({
 
   return (
     <SessionProvider session={session}>
-      <div className="flex flex-col h-full w-full">
+      <div className="flex flex-col h-full w-full bg-black">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
         <PlaygroundHeader
           title={config.title}
           logo={logo}

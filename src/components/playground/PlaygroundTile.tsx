@@ -32,11 +32,11 @@ export const PlaygroundTile: React.FC<PlaygroundTileProps> = ({
   const contentPadding = padding ? 4 : 0;
   return (
     <div
-      className={`flex flex-col border rounded-sm border-gray-800 text-gray-500 bg-${backgroundColor} ${className}`}
+      className={`flex flex-col border border-white/5 rounded-[24px] text-gray-400 bg-black/40 backdrop-blur-3xl overflow-hidden ${className}`}
     >
       {title && (
         <div
-          className="flex items-center justify-center text-xs uppercase py-2 border-b border-b-gray-800 tracking-wider"
+          className="flex items-center justify-center text-xs uppercase py-3 border-b border-b-white/5 tracking-wider font-semibold"
           style={{
             height: `${titleHeight}px`,
           }}
@@ -71,10 +71,10 @@ export const PlaygroundTabbedTile: React.FC<PlaygroundTabbedTileProps> = ({
   }
   return (
     <div
-      className={`flex flex-col h-full border rounded-sm border-gray-800 text-gray-500 bg-${backgroundColor} ${className}`}
+      className={`flex flex-col h-full border border-white/5 rounded-[24px] text-gray-400 bg-black/40 backdrop-blur-3xl overflow-hidden ${className}`}
     >
       <div
-        className="flex items-center justify-start text-xs uppercase border-b border-b-gray-800 tracking-wider"
+        className="flex items-center justify-start text-xs uppercase border-b border-b-white/5 tracking-wider font-semibold"
         style={{
           height: `${titleHeight}px`,
         }}
@@ -82,10 +82,10 @@ export const PlaygroundTabbedTile: React.FC<PlaygroundTabbedTileProps> = ({
         {tabs.map((tab, index) => (
           <button
             key={index}
-            className={`px-4 py-2 rounded-sm hover:bg-gray-800 hover:text-gray-300 border-r border-r-gray-800 ${
+            className={`px-4 py-2 transition-colors border-r border-r-white/5 ${
               index === activeTab
-                ? `bg-gray-900 text-gray-300`
-                : `bg-transparent text-gray-500`
+                ? `bg-white/10 text-white`
+                : `bg-transparent text-gray-500 hover:text-gray-300 hover:bg-white/5`
             }`}
             onClick={() => setActiveTab(index)}
           >
