@@ -64,6 +64,25 @@ function generateRandomRoomName() {
   return `room-${Math.random().toString(36).substring(2, 10)}`;
 }
 
+function getSavedOrRandomRoomName() {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("livekit_room_name");
+    if (saved) return saved;
+  }
+  const newName = generateRandomRoomName();
+  if (typeof window !== "undefined") {
+    localStorage.setItem("livekit_room_name", newName);
+  }
+  return newName;
+}
+
+function getSavedParticipantIdentity() {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("livekit_participant_identity") || "";
+  }
+  return "";
+}
+
 export default function Playground({
   logo,
   themeColors,
@@ -80,7 +99,12 @@ export default function Playground({
 
   // User-entered room name. When empty, a random name is generated
   // in tokenFetchOptions for each session.
-  const [userRoomName, setUserRoomName] = useState("");
+  const [userRoomName, setUserRoomName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("livekit_room_name") || "";
+    }
+    return "";
+  });
 
   // Voice preset + TTS model state
   const [voicePresets, setVoicePresets] = useState<Record<string, { voice_id: string; description: string }>>({});
@@ -109,9 +133,15 @@ export default function Playground({
     useState<TokenSourceFetchOptions>(() => {
       // Always initialize with a roomName so the SDK's token cache
       // has a non-empty key set for future equality comparisons.
+      const savedRoom = typeof window !== "undefined" ? localStorage.getItem("livekit_room_name") : null;
+      const savedIdentity = typeof window !== "undefined" ? localStorage.getItem("livekit_participant_identity") : null;
+      
       const opts: TokenSourceFetchOptions = {
-        roomName: generateRandomRoomName(),
+        roomName: savedRoom || getSavedOrRandomRoomName(),
       };
+      if (savedIdentity) {
+        opts.participantIdentity = savedIdentity;
+      }
       if (initialAgentOptions) {
         opts.agentName = initialAgentOptions.agentName ?? "";
         opts.agentMetadata = initialAgentOptions.metadata ?? "";
@@ -438,9 +468,12 @@ export default function Playground({
               valueColor={`${config.settings.theme_color}-500`}
               onValueChange={(value) => {
                 setUserRoomName(value);
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("livekit_room_name", value);
+                }
                 setTokenFetchOptions((prev) => ({
                   ...prev,
-                  roomName: value || generateRandomRoomName(),
+                  roomName: value || getSavedOrRandomRoomName(),
                 }));
               }}
               placeholder="Auto"
@@ -618,6 +651,9 @@ export default function Playground({
               }
               valueColor={`${config.settings.theme_color}-500`}
               onValueChange={(value) => {
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("livekit_participant_identity", value);
+                }
                 setTokenFetchOptions({
                   ...tokenFetchOptions,
                   participantIdentity: value,
@@ -828,9 +864,13 @@ export default function Playground({
               // Generate a new random room name for next connect so the
               // SDK fetches a fresh token. User-set names are preserved.
               if (!userRoomName) {
+                const newRoom = generateRandomRoomName();
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("livekit_room_name", newRoom);
+                }
                 setTokenFetchOptions((prev) => ({
                   ...prev,
-                  roomName: generateRandomRoomName(),
+                  roomName: newRoom,
                 }));
               }
             }
