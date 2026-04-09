@@ -41,7 +41,7 @@ import {
 } from "livekit-client";
 import { RoomAgentDispatch } from "livekit-server-sdk";
 import { QRCodeSVG } from "qrcode.react";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import tailwindTheme from "../../lib/tailwindTheme.preval";
 import { RpcPanel } from "./RpcPanel";
 
@@ -77,9 +77,33 @@ export default function Playground({
   const [rpcPayload, setRpcPayload] = useState("");
   const [hasConnected, setHasConnected] = useState(false);
 
+
   // User-entered room name. When empty, a random name is generated
   // in tokenFetchOptions for each session.
   const [userRoomName, setUserRoomName] = useState("");
+
+  // Voice preset + TTS model state
+  const [voicePresets, setVoicePresets] = useState<Record<string, { voice_id: string; description: string }>>({});
+  const [selectedVoice, setSelectedVoice] = useState<string>("Cowboy Grandad");
+  const [ttsModels, setTtsModels] = useState<Record<string, string>>({});
+  const [selectedModel, setSelectedModel] = useState<string>("Turbo v2.5");
+  const [agentModels, setAgentModels] = useState<Record<string, string>>({});
+  const [selectedAgentModel, setSelectedAgentModel] = useState<string>("google/gemini-3-flash-preview");
+
+  // Fetch voice presets + models on mount
+  useEffect(() => {
+    fetch("/api/voices")
+      .then((res) => res.json())
+      .then((data) => {
+        setVoicePresets(data.presets || {});
+        setSelectedVoice(data.default || "Cowboy Grandad");
+        setTtsModels(data.models || {});
+        setSelectedModel(data.default_model || "Turbo v2.5");
+        setAgentModels(data.agent_models || {});
+        setSelectedAgentModel(data.default_agent_model || "google/gemini-3-flash-preview");
+      })
+      .catch(() => {});
+  }, []);
 
   const [tokenFetchOptions, setTokenFetchOptions] =
     useState<TokenSourceFetchOptions>(() => {
@@ -123,6 +147,75 @@ export default function Playground({
 
   const localScreenTrack = session.room.localParticipant.getTrackPublication(
     Track.Source.ScreenShare,
+  );
+
+  // Set voice_preset + tts_model attributes before connecting
+  useEffect(() => {
+    if (!session.isConnected) {
+      setTokenFetchOptions((prev) => ({
+        ...prev,
+        participantAttributes: {
+          ...(prev?.participantAttributes || {}),
+          voice_preset: selectedVoice,
+          tts_model: selectedModel,
+          llm_model: selectedAgentModel,
+        },
+      }));
+    }
+  }, [selectedVoice, selectedModel, selectedAgentModel, session.isConnected]);
+
+  const handleVoiceChange = useCallback(
+    async (voiceName: string) => {
+      setSelectedVoice(voiceName);
+      if (session.isConnected && agent.internal.agentParticipant) {
+        try {
+          await session.room.localParticipant.performRpc({
+            destinationIdentity: agent.internal.agentParticipant.identity,
+            method: "set_voice",
+            payload: voiceName,
+          });
+        } catch (err) {
+          console.error("Failed to change voice:", err);
+        }
+      }
+    },
+    [session.isConnected, session.room.localParticipant, agent.internal.agentParticipant],
+  );
+
+  const handleModelChange = useCallback(
+    async (modelName: string) => {
+      setSelectedModel(modelName);
+      if (session.isConnected && agent.internal.agentParticipant) {
+        try {
+          await session.room.localParticipant.performRpc({
+            destinationIdentity: agent.internal.agentParticipant.identity,
+            method: "set_tts_model",
+            payload: modelName,
+          });
+        } catch (err) {
+          console.error("Failed to change TTS model:", err);
+        }
+      }
+    },
+    [session.isConnected, session.room.localParticipant, agent.internal.agentParticipant],
+  );
+
+  const handleAgentModelChange = useCallback(
+    async (modelId: string) => {
+      setSelectedAgentModel(modelId);
+      if (session.isConnected && agent.internal.agentParticipant) {
+        try {
+          await session.room.localParticipant.performRpc({
+            destinationIdentity: agent.internal.agentParticipant.identity,
+            method: "set_llm_model",
+            payload: modelId,
+          });
+        } catch (err) {
+          console.error("Failed to change agent model:", err);
+        }
+      }
+    },
+    [session.isConnected, session.room.localParticipant, agent.internal.agentParticipant],
   );
 
   const startSession = useCallback(() => {
@@ -434,6 +527,69 @@ export default function Playground({
           </div>
         </ConfigurationPanelItem>
 
+        {Object.keys(voicePresets).length > 0 && (
+          <ConfigurationPanelItem title="Voice">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                {Object.entries(voicePresets).map(([name, preset]) => (
+                  <button
+                    key={name}
+                    onClick={() => handleVoiceChange(name)}
+                    className={`flex items-center justify-between px-3 py-2 rounded-sm text-sm transition-colors ${
+                      selectedVoice === name
+                        ? `bg-${config.settings.theme_color}-500/20 text-${config.settings.theme_color}-400 border border-${config.settings.theme_color}-500/50`
+                        : "bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700"
+                    }`}
+                  >
+                    <span className="font-medium">{name}</span>
+                    <span className="text-xs opacity-60">{preset.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </ConfigurationPanelItem>
+        )}
+
+        {Object.keys(agentModels).length > 0 && (
+          <ConfigurationPanelItem title="Agent Model">
+            <div className="flex flex-col gap-1">
+              {Object.entries(agentModels).map(([name, id]) => (
+                <button
+                  key={id}
+                  onClick={() => handleAgentModelChange(id)}
+                  className={`px-3 py-1.5 rounded-sm text-xs font-medium text-left transition-colors ${
+                    selectedAgentModel === id
+                      ? `bg-${config.settings.theme_color}-500/20 text-${config.settings.theme_color}-400 border border-${config.settings.theme_color}-500/50`
+                      : "bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </ConfigurationPanelItem>
+        )}
+
+        {Object.keys(ttsModels).length > 0 && (
+          <ConfigurationPanelItem title="TTS Model">
+            <div className="flex flex-row gap-1 flex-wrap">
+              {Object.keys(ttsModels).map((name) => (
+                <button
+                  key={name}
+                  onClick={() => handleModelChange(name)}
+                  className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${
+                    selectedModel === name
+                      ? `bg-${config.settings.theme_color}-500/20 text-${config.settings.theme_color}-400 border border-${config.settings.theme_color}-500/50`
+                      : "bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </ConfigurationPanelItem>
+        )}
+
         <ConfigurationPanelItem title="User">
           <div className="flex flex-col gap-2">
             <EditableNameValueRow
@@ -589,7 +745,19 @@ export default function Playground({
     attributeItems,
     tokenFetchOptions,
     setTokenFetchOptions,
+
     userRoomName,
+
+    voicePresets,
+    selectedVoice,
+    handleVoiceChange,
+    ttsModels,
+    selectedModel,
+    handleModelChange,
+    agentModels,
+    selectedAgentModel,
+    handleAgentModelChange,
+
   ]);
 
   let mobileTabs: PlaygroundTab[] = [];
