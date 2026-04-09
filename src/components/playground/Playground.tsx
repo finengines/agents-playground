@@ -327,7 +327,7 @@ export default function Playground({
     }
 
     return (
-      <div className="flex flex-col w-full grow text-gray-950 bg-black rounded-sm border border-gray-800 relative">
+      <div className="flex flex-col w-full grow text-white bg-black/40 rounded-[24px] border border-white/5 relative overflow-hidden">
         {content}
       </div>
     );
@@ -360,15 +360,26 @@ export default function Playground({
     );
 
     const visualizerContent = (
-      <div
-        className={`flex items-center justify-center w-full h-48 [--lk-va-bar-width:30px] [--lk-va-bar-gap:20px] [--lk-fg:var(--lk-theme-color)]`}
-      >
-        <BarVisualizer
-          state={agent.state}
-          track={agent.microphoneTrack}
-          barCount={5}
-          options={{ minHeight: 20 }}
-        />
+      <div className="flex flex-col items-center justify-center gap-8 w-full">
+        <div
+          className={`flex items-center justify-center w-full h-48 [--lk-va-bar-width:4px] [--lk-va-bar-gap:6px] [--lk-va-bar-border-radius:2px] [--lk-fg:var(--lk-theme-color)] transition-all duration-1000 ${
+            agent.state === "speaking" ? "scale-110 opacity-100" : "scale-100 opacity-60"
+          }`}
+        >
+          <BarVisualizer
+            state={agent.state}
+            track={agent.microphoneTrack}
+            barCount={7}
+            options={{ minHeight: 24 }}
+          />
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <div className={`text-[10px] tracking-[0.3em] font-bold uppercase transition-all duration-500 ${
+            agent.state === "speaking" ? "text-white opacity-100" : "text-white/20 opacity-40"
+          }`}>
+            {agent.state === "speaking" ? "Assistant is speaking" : agent.state === "listening" ? "Listening..." : agent.state === "thinking" ? "Thinking..." : "Connected"}
+          </div>
+        </div>
       </div>
     );
 

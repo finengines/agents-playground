@@ -32,11 +32,11 @@ export const PlaygroundTile: React.FC<PlaygroundTileProps> = ({
   const contentPadding = padding ? 4 : 0;
   return (
     <div
-      className={`flex flex-col border border-white/5 rounded-[24px] text-gray-400 bg-black/40 backdrop-blur-3xl overflow-hidden ${className}`}
+      className={`flex flex-col border border-white/10 rounded-[32px] text-gray-400 bg-[#0A0A0A]/60 backdrop-blur-2xl overflow-hidden shadow-2xl transition-all duration-300 ${className}`}
     >
       {title && (
         <div
-          className="flex items-center justify-center text-xs uppercase py-3 border-b border-b-white/5 tracking-wider font-semibold"
+          className="flex items-center justify-center text-[10px] uppercase py-3 border-b border-b-white/5 tracking-[0.2em] font-bold text-white/40"
           style={{
             height: `${titleHeight}px`,
           }}
@@ -71,10 +71,11 @@ export const PlaygroundTabbedTile: React.FC<PlaygroundTabbedTileProps> = ({
   }
   return (
     <div
-      className={`flex flex-col h-full border border-white/5 rounded-[24px] text-gray-400 bg-black/40 backdrop-blur-3xl overflow-hidden ${className}`}
+    <div
+      className={`flex flex-col h-full border border-white/10 rounded-[32px] text-gray-400 bg-[#0A0A0A]/60 backdrop-blur-2xl overflow-hidden shadow-2xl transition-all duration-300 ${className}`}
     >
       <div
-        className="flex items-center justify-start text-xs uppercase border-b border-b-white/5 tracking-wider font-semibold"
+        className="flex items-center justify-start text-[10px] uppercase border-b border-b-white/5 tracking-[0.2em] font-bold text-white/40"
         style={{
           height: `${titleHeight}px`,
         }}
@@ -82,10 +83,10 @@ export const PlaygroundTabbedTile: React.FC<PlaygroundTabbedTileProps> = ({
         {tabs.map((tab, index) => (
           <button
             key={index}
-            className={`px-4 py-2 transition-colors border-r border-r-white/5 ${
+            className={`px-6 py-2 transition-all border-r border-r-white/5 ${
               index === activeTab
-                ? `bg-white/10 text-white`
-                : `bg-transparent text-gray-500 hover:text-gray-300 hover:bg-white/5`
+                ? `bg-white/5 text-white shadow-inner`
+                : `bg-transparent text-white/30 hover:text-white/60 hover:bg-white/[0.02]`
             }`}
             onClick={() => setActiveTab(index)}
           >

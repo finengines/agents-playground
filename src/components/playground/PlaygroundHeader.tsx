@@ -27,25 +27,25 @@ export const PlaygroundHeader = ({
   const { config } = useConfig();
   return (
     <div
-      className={`flex gap-6 px-6 py-4 backdrop-blur-2xl bg-white/5 border border-white/10 rounded-full shadow-2xl justify-between items-center shrink-0 w-max mx-auto mt-6 transition-all duration-500`}
+      className={`flex gap-3 px-4 py-2 backdrop-blur-2xl bg-white/5 border border-white/10 rounded-full shadow-2xl justify-between items-center shrink-0 w-max max-w-[95vw] mx-auto mt-4 transition-all duration-500 sticky top-4 z-50`}
       style={{
-        height: height + "px",
+        height: "56px",
       }}
     >
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center bg-black/40 p-2 rounded-full shadow-inner ring-1 ring-white/10">
+      <div className="flex items-center gap-2 overflow-hidden">
+        <div className="flex items-center justify-center bg-black/40 p-1.5 rounded-full shadow-inner ring-1 ring-white/10 shrink-0">
           <a href="https://livekit.io">{logo ?? <LKLogo />}</a>
         </div>
-        <div className="text-sm font-medium text-white tracking-wide">
+        <div className="text-xs font-medium text-white tracking-wide truncate hidden sm:block">
           {title}
         </div>
       </div>
-      <div className="flex justify-end items-center gap-3">
+      <div className="flex justify-end items-center gap-2 shrink-0">
         {githubLink && (
           <a
             href={githubLink}
             target="_blank"
-            className={`text-white/70 hover:text-white transition-colors`}
+            className={`text-white/70 hover:text-white transition-colors hidden xs:block`}
           >
             <GithubSVG />
           </a>
@@ -55,7 +55,7 @@ export const PlaygroundHeader = ({
           accentColor={
             connectionState === ConnectionState.Connected ? "red" : accentColor
           }
-          className="rounded-full px-5 font-semibold text-sm h-10 shadow-lg shadow-black/20"
+          className="rounded-full px-4 font-semibold text-xs h-9 shadow-lg shadow-black/20 shrink-0"
           disabled={connectionState === ConnectionState.Connecting}
           onClick={() => {
             onConnectClicked();
